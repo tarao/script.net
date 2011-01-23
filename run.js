@@ -3,6 +3,8 @@ WScript.Quit((function() {
 
     var SRCDIR = 'build';
     var OUTDIR = 'build';
+    var MODDIR = 'lib';
+    var MODULES = [ 'GNN.Script.js' ];
     var BOOTSTRAP = 'bootstrap.js';
     var SOURCE = 'script.net.js';
     var OUTPUT = CLI ? 'cscript.net.exe' : 'wscript.net.exe';
@@ -82,51 +84,74 @@ WScript.Quit((function() {
         parent: function(path) { return FSO.GetParentFolderName(path); }
     };
 
+    var build = function(file) {
+        var runner = new Runner();
+        runner.shell.CurrentDirectory = Path.join(path, SRCDIR);
+
+        var cmd = [
+            BOOTSTRAP, '/nologo',
+            '/out:'+file.binary
+        ];
+        if (file.target) cmd.push('/target:'+file.target);
+        if ((file.reference||[]).length > 0) {
+            cmd.push('/reference:'+file.reference.join(';'));
+        }
+        cmd.push(file.source);
+
+        return runner.script(cmd.join(' '), Runner.SW.HIDE, true);
+    };
+
     SHOW = Runner.SW[SHOW];
     if (typeof SHOW == 'undefined') SHOW = Runner.SW['DEFAULT'];
 
     var path = Path.parent(WScript.ScriptFullName);
-    var full = {
-        binary: Path.join(path, OUTDIR, OUTPUT), // should be in root dir?
+    var outdir = Path.join(path, OUTDIR);
+
+    var main = {
         source: Path.join(path, SRCDIR, SOURCE),
-        bootstrap: Path.join(path, SRCDIR, BOOTSTRAP)
+        binary: Path.join(outdir, OUTPUT),
+        target: (CLI ? null : 'winexe'),
+        reference: []
     };
-    var exist = {
-        binary: FSO.FileExists(full.binary),
-        source: FSO.FileExists(full.source),
-        bootstrap: FSO.FileExists(full.bootstrap)
-    };
+    var modules = [];
+    for (var i=0; i < MODULES.length; i++) {
+        var out = [ FSO.GetBaseName(MODULES[i]), 'dll'].join('.');
+        main.reference.push(out);
+        modules.unshift({
+            source: Path.join(path, MODDIR, MODULES[i]),
+            binary: Path.join(outdir, out),
+            target: 'library'
+        });
+    }
 
-    var build = function() {
-        var runner = new Runner();
-        runner.shell.CurrentDirectory = Path.join(path, SRCDIR);
-        var cmd = [
-            BOOTSTRAP, '/nologo' + (CLI ? '' : ' /target:winexe'),
-            '/out:'+full.binary, SOURCE
-        ].join(' ');
-        return runner.script(cmd, Runner.SW.HIDE, true);
-    };
-
-    if (exist.source && exist.binary) {
-        binary = FSO.GetFile(full.binary);
-        source = FSO.GetFile(full.source);
-        if (binary.DateLastModified < source.DateLastModified) {
-            if (build() != 0) return 2;
+    var files = modules.concat([main]);
+    for (var i=0; i < files.length; i++) {
+        var file = files[i];
+        file.exist = {
+            source: FSO.FileExists(file.source),
+            binary: FSO.FileExists(file.binary)
+        };
+        if (file.exist.source && file.exist.binary) {
+            var binary = FSO.GetFile(file.binary);
+            var source = FSO.GetFile(file.source);
+            if (binary.DateLastModified < source.DateLastModified) {
+                if (build(file) != 0) return 2;
+            }
+        } else if (!file.exist.binary) {
+            if (build(file) != 0) return 2;
+        } else if (!file.exist.source && !file.exist.binary) {
+            IO.err("Could not find '" + file.source + "'");
+            return 1;
         }
-    } else if (!exist.binary) {
-        if (build() != 0) return 2;
-    } else if (!exist.source && !exist.binary) {
-        IO.err('Could not find the source code of script runner');
-        return 1;
     }
 
     var count=0; var wait = 20; var max=5000;
-    while (!FSO.FileExists(full.binary) && count < max) {
+    while (!FSO.FileExists(main.binary) && count < max) {
         count += wait;
         WScript.Sleep(wait);
     }
 
-    var cmd = [ full.binary ]; var wait;
+    var cmd = [ main.binary ]; var wait;
     var argwait = WScript.Arguments.Named.Item('wait');
     if (argwait) wait = /(true|yes|on|1)/.test(argwait.toLowerCase());
     for (var i=0; i < WScript.Arguments.Length; i++) {
