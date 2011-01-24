@@ -73,9 +73,7 @@ import GNN;
     // compile
     var res = script.compile(fname, provider);
     if (0 < res.Errors.Count) {
-        for (var i =0; i < res.Errors.Count; i++) {
-            Console.Error.WriteLine(res.Errors[i].ToString());
-        }
+        script.reportErrors(Console.Error);
         return;
     }
 
