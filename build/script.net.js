@@ -48,6 +48,10 @@ import GNN;
         script.importConfiguredAssemblies();
     }
 
+    // FIXME: this should be added by a statement
+    // import GNN in 'GNN.Script.dll'
+    script.importAssemblies('GNN.Script.dll');
+
     // select language
     var provider=null; var m;
     if (named.lang) {
