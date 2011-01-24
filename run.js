@@ -62,8 +62,8 @@ WScript.Quit((function() {
     })(function() {
         var self = { shell: WScript.CreateObject('WScript.Shell') };
         self.run = function(cmd, show, wait) {
+            if (typeof wait == 'undefined') wait = true;
             if (CLI) {
-                if (typeof wait == 'undefined') wait = true;
                 var exec = self.shell.exec(cmd);
                 if (wait) {
                     while (exec.Status == 0) {
@@ -154,15 +154,9 @@ WScript.Quit((function() {
         }
     }
 
-    var count=0; var wait = 20; var max=5000;
-    while (!FSO.FileExists(main.binary) && count < max) {
-        count += wait;
-        WScript.Sleep(wait);
-    }
-
     var cmd = [ main.binary ]; var wait;
     var argwait = WScript.Arguments.Named.Item('wait');
-    if (argwait) wait = /(true|yes|on|1)/.test(argwait.toLowerCase());
+    if (argwait) wait = !/(false|no|off|0)/.test(argwait.toLowerCase());
     for (var i=0; i < WScript.Arguments.Length; i++) {
         var arg = WScript.Arguments(i);
         if (!new RegExp('^/(show|wait):').test(arg.toLowerCase())) {

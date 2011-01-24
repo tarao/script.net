@@ -36,8 +36,8 @@ WScript.Quit((function() {
     })(function() {
         var self = { shell: WScript.CreateObject('WScript.Shell') };
         self.run = function(cmd, show, wait) {
+            if (typeof wait == 'undefined') wait = true;
             if (CLI) {
-                if (typeof wait == 'undefined') wait = true;
                 var exec = self.shell.exec(cmd);
                 if (wait) {
                     while (exec.Status == 0) {
