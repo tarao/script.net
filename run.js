@@ -29,6 +29,26 @@ WScript.Quit((function() {
     var OUTPUT = CLI ? 'cscript.net.exe' : 'wscript.net.exe';
     var CWD = WScript.CreateObject('WScript.Shell').CurrentDirectory;
     var SHOW = (WScript.Arguments.Named.Item('show')||'DEFAULT').toUpperCase();
+    var WAIT = WScript.Arguments.Named.Item('wait');
+    var SCRIPT_ARGS = [];
+    for (var i=0; i < WScript.Arguments.Length; i++) {
+        var arg = WScript.Arguments(i);
+        if (!new RegExp('^/(show|wait):').test(arg.toLowerCase())) {
+            SCRIPT_ARGS.push('"'+arg+'"');
+        }
+    }
+    var HELP = [
+        [ 'Usage:', WScript.ScriptName,
+          '[/wait:true|false]',
+          '[/show:<show>]',
+          '<script>',
+          '<args>...'
+        ].join(' '),
+        'Options:',
+        '  <show>  One of the following values:',
+        '            HIDE NORMAL MINIMIZED MAXIMIZED NOACTIVATE SHOW',
+        '            MINIMIZE MINNOACTIVE NA RESTORE DEFAULT FORCEMINIMIZE'
+    ].join("\n")
 
     var IO = {
         print: function(msg) {
@@ -108,8 +128,10 @@ WScript.Quit((function() {
         return runner.script(cmd.join(' '), Runner.SW.HIDE, true);
     };
 
-    SHOW = Runner.SW[SHOW];
-    if (typeof SHOW == 'undefined') SHOW = Runner.SW['DEFAULT'];
+    if (SCRIPT_ARGS.length <= 0) {
+        IO.puts(HELP);
+        return 0;
+    }
 
     var path = Path.parent(WScript.ScriptFullName);
     var outdir = OUTDIR;
@@ -155,17 +177,12 @@ WScript.Quit((function() {
     }
 
     var cmd = [ main.binary ]; var wait;
-    var argwait = WScript.Arguments.Named.Item('wait');
-    if (argwait) wait = !/(false|no|off|0)/.test(argwait.toLowerCase());
-    for (var i=0; i < WScript.Arguments.Length; i++) {
-        var arg = WScript.Arguments(i);
-        if (!new RegExp('^/(show|wait):').test(arg.toLowerCase())) {
-            cmd.push('"'+arg+'"')
-        }
-    }
+    if (WAIT) wait = !/(false|no|off|0)/.test(WAIT.toLowerCase());
+    SHOW = Runner.SW[SHOW];
+    if (typeof SHOW == 'undefined') SHOW = Runner.SW['DEFAULT'];
     var runner = new Runner();
     runner.shell.CurrentDirectory = CWD;
-    runner.run(cmd.join(' '), SHOW, wait);
+    runner.run(cmd.concat(SCRIPT_ARGS).join(' '), SHOW, wait);
 
     return 0;
 })());
