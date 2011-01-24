@@ -1,8 +1,27 @@
 WScript.Quit((function() {
     var CLI = /cscript.exe$/.test(WScript.FullName);
+    var FSO = WScript.CreateObject('Scripting.FileSystemObject');
 
+    var Path = {
+        join: function() {
+            var path = arguments[0] || '';
+            for (var i=1; i < arguments.length; i++) {
+                path = FSO.BuildPath(path, arguments[i]);
+            }
+            return path;
+        },
+        parent: function(path) { return FSO.GetParentFolderName(path); }
+    };
+
+    var FOLDER_SPEC = {
+        WIN: 0,
+        SYS: 1,
+        TMP: 2
+    };
+
+    var TMPDIR = FSO.GetSpecialFolder(FOLDER_SPEC.TMP).Path;
     var SRCDIR = 'build';
-    var OUTDIR = 'build';
+    var OUTDIR = Path.join(TMPDIR, 'gnn.script.net');
     var MODDIR = 'lib';
     var MODULES = [ 'GNN.Script.js' ];
     var BOOTSTRAP = 'bootstrap.js';
@@ -72,18 +91,6 @@ WScript.Quit((function() {
         return self;
     });
 
-    var FSO = WScript.CreateObject('Scripting.FileSystemObject');
-    var Path = {
-        join: function() {
-            var path = arguments[0] || '';
-            for (var i=1; i < arguments.length; i++) {
-                path = FSO.BuildPath(path, arguments[i]);
-            }
-            return path;
-        },
-        parent: function(path) { return FSO.GetParentFolderName(path); }
-    };
-
     var build = function(file) {
         var runner = new Runner();
         runner.shell.CurrentDirectory = Path.join(path, SRCDIR);
@@ -105,7 +112,8 @@ WScript.Quit((function() {
     if (typeof SHOW == 'undefined') SHOW = Runner.SW['DEFAULT'];
 
     var path = Path.parent(WScript.ScriptFullName);
-    var outdir = Path.join(path, OUTDIR);
+    var outdir = OUTDIR;
+    if (!FSO.FolderExists(outdir)) FSO.CreateFolder(outdir);
 
     var main = {
         source: Path.join(path, SRCDIR, SOURCE),
@@ -116,10 +124,11 @@ WScript.Quit((function() {
     var modules = [];
     for (var i=0; i < MODULES.length; i++) {
         var out = [ FSO.GetBaseName(MODULES[i]), 'dll'].join('.');
+        out = Path.join(outdir, out);
         main.reference.push(out);
         modules.unshift({
             source: Path.join(path, MODDIR, MODULES[i]),
-            binary: Path.join(outdir, out),
+            binary: out,
             target: 'library'
         });
     }
