@@ -10,9 +10,10 @@ import GNN;
     var parseNamedArgs = function(args) {
         var named = {};
         while (args.length > 0) {
-            var m = new RegExp('^/(.*?)(?::(.*))$').exec(args[0]);
+            var m = new RegExp('^/([^:+-]*)(?:([:+-])(.*))?$').exec(args[0]);
             if (!m) break;
-            named[m[1]] = m[2] || true;
+            var val = (m[2] == ':' ? (m[3]||true) : !(m[2] == '-'));
+            named[m[1]] = val;
             args.shift();
         }
         return named;
@@ -28,17 +29,13 @@ import GNN;
         Console.Out.WriteLine([
             'Usage:',
             Path.GetFileName(program),
-            '[/lang:{cs[harp]|js[cript]}]',
+            '[OPTIONS]',
             '<script>',
             'args...'
         ].join(' '));
         return;
     }
 
-    var runner = new GNN.ScriptRunner({
-        lang: named.lang,
-        target: named.target,
-        'import': named['import']
-    });
+    var runner = new GNN.ScriptRunner(named);
     runner.run.apply(runner, [fname].concat(args));
 })();
