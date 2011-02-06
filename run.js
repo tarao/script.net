@@ -24,7 +24,7 @@ WScript.Quit((function() {
     var OUTDIR = Path.join(TMPDIR, 'gnn.script.net');
     var MODDIR = 'lib';
     var MODULES = [ 'GNN.Script.js' ];
-    var BOOTSTRAP = 'bootstrap.js';
+    var BOOTSTRAP = 'compile.js';
     var SOURCE = 'script.net.js';
     var OUTPUT = CLI ? 'cscript.net.exe' : 'wscript.net.exe';
     var CWD = WScript.CreateObject('WScript.Shell').CurrentDirectory;
