@@ -1,8 +1,18 @@
 /*
-    Find .NET runtime directory and run JScript compiler.
+    Find .NET runtime directory and run .NET compiler.
  */
 WScript.Quit((function() {
     var CLI = /cscript.exe$/.test(WScript.FullName);
+
+    var DEFAULT_LANG = 'JScript';
+    var LANG = WScript.Arguments.Named.Item('lang') || DEFAULT_LANG;
+
+    var CMD = {
+        js: 'jsc.exe',
+        cs: 'csc.exe'
+    };
+    var DEFAULT_CMD = CMD[DEFAULT_LANG.substr(0, 2).toLowerCase()];
+    CMD = CMD[LANG.substr(0, 2).toLowerCase()] || DEFAULT_CMD;
 
     var IO = {
         print: function(msg) {
@@ -94,14 +104,14 @@ WScript.Quit((function() {
         return self;
     };
 
-    // find directories including jsc.exe
+    // find directories including {j|c}sc.exe
     var dirs = function(dir) {
         var ret = [];
         var e = new Enumerator(FSO.GetFolder(dir).SubFolders);
         for (; !e.atEnd(); e.moveNext()) {
             var name = e.item().Name;
             if (/^v.*/.test(name) &&
-                FSO.FileExists(Path.join(dir, name, 'jsc.exe'))) {
+                FSO.FileExists(Path.join(dir, name, CMD))) {
                 ret.push(Path.join(dir, name));
             }
         }
@@ -116,7 +126,7 @@ WScript.Quit((function() {
     var versions = dirs(dir);
 
     if (versions.length <= 0) {
-        IO.err('JScript.NET compiler: Could not find jsc.exe.');
+        IO.err('.NET compiler: Could not find '+CMD+'.');
         return 1;
     }
 
@@ -126,9 +136,12 @@ WScript.Quit((function() {
     }
 
     // run the compiler
-    var cmd = [ 'jsc' ];
+    var cmd = [ CMD ];
     for (var i=0; i < WScript.Arguments.Length; i++) {
-        cmd.push('"'+WScript.Arguments(i)+'"');
+        var arg = WScript.Arguments(i);
+        if (!new RegExp('^/lang:').test(arg.toLowerCase())) {
+            cmd.push('"'+arg+'"');
+        }
     }
     var SHOW = Runner.SW[CLI ? 'DEFAULT' : 'HIDE'];
     return new Runner().run(cmd.join(' '), SHOW);
