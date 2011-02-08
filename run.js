@@ -116,7 +116,7 @@ WScript.Quit((function() {
         runner.shell.CurrentDirectory = Path.join(path, SRCDIR);
 
         var cmd = [
-            BOOTSTRAP, '/nologo',
+            BOOTSTRAP, '/nologo', '/fast+', '/debug-',
             '/out:'+file.binary
         ];
         if (file.target) cmd.push('/target:'+file.target);
