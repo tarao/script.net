@@ -23,7 +23,7 @@ WScript.Quit((function() {
     var SRCDIR = 'build';
     var OUTDIR = Path.join(TMPDIR, 'gnn.script.net');
     var MODDIR = 'lib';
-    var MODULES = [ 'GNN.Script.js' ];
+    var MODULES = [ 'GNN.Scripting.js' ];
     var BOOTSTRAP = 'compile.js';
     var SOURCE = 'script.net.js';
     var OUTPUT = CLI ? 'cscript.net.exe' : 'wscript.net.exe';

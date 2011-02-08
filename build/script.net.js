@@ -36,5 +36,5 @@ import GNN;
         return;
     }
 
-    GNN.ScriptRunner.run.apply(null, [ named, fname ].concat(args));
+    GNN.Scripting.Runner.run.apply(null, [ named, fname ].concat(args));
 })();
