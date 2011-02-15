@@ -182,7 +182,5 @@ WScript.Quit((function() {
     if (typeof SHOW == 'undefined') SHOW = Runner.SW['DEFAULT'];
     var runner = new Runner();
     runner.shell.CurrentDirectory = CWD;
-    runner.run(cmd.concat(SCRIPT_ARGS).join(' '), SHOW, wait);
-
-    return 0;
+    return runner.run(cmd.concat(SCRIPT_ARGS).join(' '), SHOW, wait);
 })());
