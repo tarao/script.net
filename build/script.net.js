@@ -36,6 +36,7 @@ import GNN;
         return;
     }
 
-    var r =GNN.Scripting.Runner.run.apply(null, [ named, fname ].concat(args));
+    var argv : String[] = args;
+    var r = GNN.Scripting.Runner.run(named, fname, argv);
     Environment.ExitCode = r;
 })();
