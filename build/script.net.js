@@ -25,7 +25,7 @@ import GNN;
     var fname = args.shift();
 
     // script file must be specified
-    if (!fname || fname.length == 0 || !File.Exists(fname)) {
+    if (named.help || named['?'] || !fname || fname.length == 0) {
         Console.Out.WriteLine([
             'Usage:',
             Path.GetFileName(program),

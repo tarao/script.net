@@ -41,13 +41,16 @@ WScript.Quit((function() {
         [ 'Usage:', WScript.ScriptName,
           '[/wait:true|false]',
           '[/show:<show>]',
+          '[OPTIONS]',
           '<script>',
           '<args>...'
         ].join(' '),
         'Options:',
-        '  <show>  One of the following values:',
-        '            HIDE NORMAL MINIMIZED MAXIMIZED NOACTIVATE SHOW',
-        '            MINIMIZE MINNOACTIVE NA RESTORE DEFAULT FORCEMINIMIZE'
+        '  <show>   One of the following values:',
+        '             HIDE NORMAL MINIMIZED MAXIMIZED NOACTIVATE SHOW',
+        '             MINIMIZE MINNOACTIVE NA RESTORE DEFAULT FORCEMINIMIZE',
+        '  OPTIONS  Options passed to the script runner.',
+        '           Try "' + WScript.ScriptName + ' /help" for the detail.',
     ].join("\n")
 
     var IO = {
