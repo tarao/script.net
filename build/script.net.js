@@ -81,7 +81,7 @@ import GNN;
     }
 
     var argv : String[] = args;
-    if (named.run == false) {
+    if (named.run == false || named.target == 'library') {
         GNN.Scripting.Runner.using(function(runner) {
             if (runner.load(fname, named)) {
                 Environment.ExitCode = 0;
