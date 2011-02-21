@@ -3,8 +3,8 @@
  */
 import System;
 import System.IO;
-
-import GNN;
+import Microsoft.JScript;
+import GNN.Scripting;
 
 (function() {
     var parseNamedArgs = function(args) {
@@ -81,16 +81,23 @@ import GNN;
     }
 
     var argv : String[] = args;
-    if (named.run == false || named.target == 'library') {
-        GNN.Scripting.Runner.using(function(runner) {
-            if (runner.load(fname, named)) {
+    try {
+        if (named.run == false || named.target == 'library') {
+            GNN.Scripting.Runner.using(function(runner) {
+                runner.load(fname, named);
                 Environment.ExitCode = 0;
-            } else {
-                Environment.ExitCode = 1;
-            }
-        });
-    } else {
-        var r = GNN.Scripting.Runner.run(named, fname, argv);
-        Environment.ExitCode = r;
+            });
+        } else {
+            var r = GNN.Scripting.Runner.run(named, fname, argv);
+            Environment.ExitCode = r;
+        }
+    } catch (err) {
+        var e : Exception = ErrorObject.ToException(err);
+        var msg : String = e.Message;
+        if (e instanceof GNN.Scripting.FatalError) {
+            msg = '[GNN.Scripting] Error: ' + msg;
+        }
+        Console.Error.WriteLine(msg);
+        Environment.ExitCode = 1;
     }
 })();
