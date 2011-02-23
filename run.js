@@ -23,7 +23,10 @@ WScript.Quit((function() {
     var SRCDIR = 'build';
     var OUTDIR = Path.join(TMPDIR, 'gnn.script.net');
     var MODDIR = 'lib';
-    var MODULES = [ 'GNN.Scripting.js' ];
+    var MODULES = [
+        'GNN.Scripting.Script.js',
+        'GNN.Scripting.js'
+    ];
     var BOOTSTRAP = 'compile.js';
     var SOURCE = 'script.net.js';
     var OUTPUT = CLI ? 'cscript.net.exe' : 'wscript.net.exe';
@@ -150,10 +153,12 @@ WScript.Quit((function() {
     for (var i=0; i < MODULES.length; i++) {
         var out = [ FSO.GetBaseName(MODULES[i]), 'dll'].join('.');
         out = Path.join(outdir, out);
+        var reference = main.reference.concat([]);
         main.reference.push(out);
-        modules.unshift({
+        modules.push({
             source: Path.join(path, MODDIR, MODULES[i]),
             binary: out,
+            reference: reference,
             target: 'library'
         });
     }
