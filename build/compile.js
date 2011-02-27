@@ -145,8 +145,9 @@ WScript.Quit((function() {
     // references
     var refs =
             WScript.Arguments.Named('reference') ||
-            WScript.Arguments.Named('r') || '';
-    refs = refs.split(';');
+            WScript.Arguments.Named('r');
+    if (refs) refs = refs.split(';');
+    refs = refs || [];
 
     // latest version
     var verRegex = /^v(\d+)\.(\d+)/i;

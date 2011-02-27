@@ -121,23 +121,23 @@ WScript.Quit((function() {
         return self;
     });
 
-    var build = function(file) {
+    var build = function(module) {
         var runner = new Runner();
         runner.shell.CurrentDirectory = Path.join(path, SRCDIR);
 
         var cmd = [
             BOOTSTRAP, '/nologo', '/debug-', '/dynamic+',
-            '/out:'+file.binary
+            '/out:'+module.binary
         ];
-        if (file.target) cmd.push('/target:'+file.target);
-        if (file.lang) {
-            cmd.push(/^js/.test(file.lang) ? '/fast+' : '/optimize+');
-            cmd.push('/lang:'+file.lang);
+        if (module.target) cmd.push('/target:'+module.target);
+        if (module.lang) {
+            cmd.push(/^js/.test(module.lang) ? '/fast+' : '/optimize+');
+            cmd.push('/lang:'+module.lang);
         }
-        if ((file.reference||[]).length > 0) {
-            cmd.push('/reference:'+file.reference.join(';'));
+        if ((module.reference||[]).length > 0) {
+            cmd.push('/reference:'+module.reference.join(';'));
         }
-        cmd.push(file.source);
+        cmd.push(module.source);
 
         return runner.script(cmd.join(' '), Runner.SW.HIDE, true);
     };
@@ -159,13 +159,19 @@ WScript.Quit((function() {
     };
     var modules = [];
     for (var i=0; i < MODULES.length; i++) {
-        var out = [ FSO.GetBaseName(MODULES[i]), 'dll'].join('.');
+        var file = MODULES[i];
+        var option = [];
+        if (file instanceof Array) {
+            file = MODULES[i][0];
+            option = MODULES[i][1];
+        }
+        var out = [ FSO.GetBaseName(file), 'dll'].join('.');
         out = Path.join(outdir, out);
         var reference = main.reference.concat([]);
         main.reference.push(out);
-        var lang = /\.js$/.test(MODULES[i]) ? 'jscript' : 'csharp';
+        var lang = /\.js$/.test(file) ? 'jscript' : 'csharp';
         modules.push({
-            source: Path.join(path, MODDIR, MODULES[i]),
+            source: Path.join(path, MODDIR, file),
             binary: out,
             reference: reference,
             lang: lang,

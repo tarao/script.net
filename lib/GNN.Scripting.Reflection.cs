@@ -46,7 +46,7 @@ namespace GNN.Scripting.Reflection {
       } catch (InvalidOperationException e) {
         throw new FatalError(e.Message);
       } catch (Exception e) {
-        var msg = e.Message;
+        string msg = e.Message;
         if (msg.Length == 0) {
           msg = "Invalid constructor " +
             "'" + this.name + "'" +
@@ -64,7 +64,7 @@ namespace GNN.Scripting.Reflection {
       } catch (InvalidOperationException e) {
         throw new FatalError(e.Message);
       } catch (Exception e) {
-        var msg = e.Message;
+        string msg = e.Message;
         if (msg.Length == 0) {
           msg  = "Invalid method " +
             "'" + this.name + "." + method + "'" +
@@ -116,7 +116,7 @@ namespace GNN.Scripting.Reflection {
       } catch (InvalidOperationException e) {
         throw new FatalError(e.Message);
       } catch (Exception e) {
-        var msg = e.Message;
+        string msg = e.Message;
         if (msg.Length == 0) {
           msg = "Invalid method " +
             "'" + method + "'" +
@@ -134,7 +134,7 @@ namespace GNN.Scripting.Reflection {
       } catch (InvalidOperationException e) {
         throw new FatalError(e.Message);
       } catch (Exception e) {
-        var msg = e.Message;
+        string msg = e.Message;
         if (msg.Length == 0) {
           msg = "Invalid property " +
             "'" + prop + "'" +
@@ -152,7 +152,7 @@ namespace GNN.Scripting.Reflection {
       } catch (InvalidOperationException e) {
         throw new FatalError(e.Message);
       } catch (Exception e) {
-        var msg = e.Message;
+        string msg = e.Message;
         if (msg.Length == 0) {
           msg = "Invalid property " +
             "'" + prop + "'" +
