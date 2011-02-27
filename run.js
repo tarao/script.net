@@ -27,6 +27,7 @@ WScript.Quit((function() {
         'GNN.Scripting.Script.js',
         'GNN.Scripting.Preprocessor.js',
         'GNN.Scripting.Compiler.js',
+        'GNN.Scripting.Reflection.cs',
         'GNN.Scripting.Impl.js',
         'GNN.Scripting.js'
     ];
@@ -125,10 +126,14 @@ WScript.Quit((function() {
         runner.shell.CurrentDirectory = Path.join(path, SRCDIR);
 
         var cmd = [
-            BOOTSTRAP, '/nologo', '/fast+', '/debug-',
+            BOOTSTRAP, '/nologo', '/debug-',
             '/out:'+file.binary
         ];
         if (file.target) cmd.push('/target:'+file.target);
+        if (file.lang) {
+            cmd.push(/^js/.test(file.lang) ? '/fast+' : '/optimize+');
+            cmd.push('/lang:'+file.lang);
+        }
         if ((file.reference||[]).length > 0) {
             cmd.push('/reference:'+file.reference.join(';'));
         }
@@ -158,10 +163,12 @@ WScript.Quit((function() {
         out = Path.join(outdir, out);
         var reference = main.reference.concat([]);
         main.reference.push(out);
+        var lang = /\.js$/.test(MODULES[i]) ? 'jscript' : 'csharp';
         modules.push({
             source: Path.join(path, MODDIR, MODULES[i]),
             binary: out,
             reference: reference,
+            lang: lang,
             target: 'library'
         });
     }
