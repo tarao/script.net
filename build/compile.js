@@ -121,8 +121,13 @@ WScript.Quit((function() {
     var shell = WScript.CreateObject('WScript.Shell');
     var env = new Env(shell.Environment('PROCESS'));
 
+    var defs = [];
+
     var dir = Path.join(env('WINDIR'), 'Microsoft.NET', 'Framework');
-    if (WScript.Arguments.Named.Item('platform') == 'x64') dir += '64';
+    if (WScript.Arguments.Named.Item('platform') == 'x64') {
+        defs.push('_X64');
+        dir += '64';
+    }
     var versions = dirs(dir);
 
     if (versions.length <= 0) {
@@ -131,15 +136,44 @@ WScript.Quit((function() {
     }
 
     // extend the environment
+    var latest = '';
     for (var i=0; i < versions.length; i++) {
+        latest = versions[i];
         env.path.unshift(versions[i]);
+    }
+
+    // references
+    var refs =
+            WScript.Arguments.Named('reference') ||
+            WScript.Arguments.Named('r') || '';
+    refs = refs.split(';');
+
+    // latest version
+    var verRegex = /^v(\d+)\.(\d+)/i;
+    var m = verRegex.exec(latest.split('\\').pop());
+    if (m) {
+        var major = parseInt(m[1]);
+        var minor = parseInt(m[2]);
+        if (major >= 4) {
+            if (WScript.Arguments.Named('dynamic')) {
+                refs.push('System.Dynamic.dll');
+                refs.push('System.Core.dll');
+            }
+            defs.push('_NET4');
+        }
+        defs.push('_NET'+major+minor);
     }
 
     // run the compiler
     var cmd = [ CMD ];
+    if (defs.length > 0) cmd.push('/define:'+defs.join(';'));
+    if (refs.length > 0) cmd.push('/r:'+refs.join(';'));
+
     for (var i=0; i < WScript.Arguments.Length; i++) {
         var arg = WScript.Arguments(i);
-        if (!new RegExp('^/lang:').test(arg.toLowerCase())) {
+        if (!new RegExp('^/lang:').test(arg.toLowerCase()) &&
+            !new RegExp('^/r(?:eference)?:').test(arg.toLowerCase()) &&
+            !new RegExp('^/dynamic[+-]?$').test(arg.toLowerCase())) {
             cmd.push('"'+arg+'"');
         }
     }
