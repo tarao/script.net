@@ -5,6 +5,7 @@ import System;
 import System.IO;
 import Microsoft.JScript;
 import GNN.Scripting;
+import GNN.Scripting.Reflection;
 
 (function() {
     var parseNamedArgs = function(args) {
@@ -82,15 +83,20 @@ import GNN.Scripting;
 
     var argv : String[] = args;
     try {
-        if (named.run == false || named.target == 'library') {
-            GNN.Scripting.Runner.using(function(runner) {
-                runner.load(fname, named);
+        GNN.Scripting.Runner.using(function(runner) {
+            // compile
+            var asm : Assembly = runner.load(fname, named);
+            if (asm.warned) {
+                Console.Error.WriteLine(asm.warnings.join("\n"));
+            }
+
+            // run
+            if (named.run == false || named.target == 'library') {
                 Environment.ExitCode = 0;
-            });
-        } else {
-            var r = GNN.Scripting.Runner.run(named, fname, argv);
-            Environment.ExitCode = r;
-        }
+            } else {
+                Environment.ExitCode = asm.run(argv);
+            }
+        });
     } catch (err) {
         var e : Exception = ErrorObject.ToException(err);
         var msg : String = e.Message;
@@ -98,6 +104,6 @@ import GNN.Scripting;
             msg = '[GNN.Scripting] Error: ' + msg;
         }
         Console.Error.WriteLine(msg);
-        Environment.ExitCode = 1;
+        Environment.ExitCode = -1;
     }
 })();
