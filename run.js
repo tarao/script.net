@@ -25,6 +25,7 @@ WScript.Quit((function() {
     var MODDIR = 'lib';
     var MODULES = [
         'GNN.Scripting.Script.js',
+        'GNN.Scripting.Preprocessor.js',
         'GNN.Scripting.Compiler.js',
         'GNN.Scripting.Impl.js',
         'GNN.Scripting.js'
