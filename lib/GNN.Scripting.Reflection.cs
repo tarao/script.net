@@ -15,6 +15,18 @@ namespace GNN.Scripting.Reflection {
     public RuntimeError(string msg) : base(msg) {}
   }
 
+  public class ReflectionException : Exception {
+    public ReflectionException(string msg) : base(msg) {}
+  }
+
+  public class InvalidMethodInvocation : ReflectionException {
+    public InvalidMethodInvocation(string msg) : base(msg) {}
+  }
+
+  public class InvalidFieldAccess : ReflectionException {
+    public InvalidFieldAccess(string msg) : base(msg) {}
+  }
+
   public interface Impl {
     int create(string klass, object[] para);
     object invoke(string klass, string method, object[] para);
@@ -51,7 +63,7 @@ namespace GNN.Scripting.Reflection {
           msg = "Invalid constructor " +
             "'" + this.name + "'" +
             " or invalid types of arguments.";
-          throw new RuntimeError(msg);
+          throw new InvalidMethodInvocation(msg);
         } else {
           throw new RuntimeError(e.Message);
         }
@@ -69,7 +81,7 @@ namespace GNN.Scripting.Reflection {
           msg  = "Invalid method " +
             "'" + this.name + "." + method + "'" +
             " or invalid types of arguments.";
-          throw new RuntimeError(msg);
+          throw new InvalidMethodInvocation(msg);
         } else {
           throw new RuntimeError(e.Message);
         }
@@ -79,14 +91,28 @@ namespace GNN.Scripting.Reflection {
 #if _NET4
     public override bool TryCreateInstance(CreateInstanceBinder binder,
                                            object[] args, out object result) {
-      result = this.create(args);
+      try {
+        result = this.create(args);
+      } catch (ReflectionException) {
+        result = null;
+        return false;
+      } catch (Exception e) {
+        throw e;
+      }
       return true;
     }
 
     public override bool TryInvokeMember(InvokeMemberBinder binder,
                                          object[] args, out object result) {
-      result = this.invoke(binder.Name, args);
-      return true;
+      try {
+        result = this.invoke(binder.Name, args);
+        return true;
+      } catch (ReflectionException) {
+        result = null;
+        return false;
+      } catch (Exception e) {
+        throw e;
+      }
     }
 #endif
 
@@ -121,7 +147,7 @@ namespace GNN.Scripting.Reflection {
           msg = "Invalid method " +
             "'" + method + "'" +
             " or invalid types of arguments.";
-          throw new RuntimeError(msg);
+          throw new InvalidMethodInvocation(msg);
         } else {
           throw new RuntimeError(e.Message);
         }
@@ -139,7 +165,7 @@ namespace GNN.Scripting.Reflection {
           msg = "Invalid property " +
             "'" + prop + "'" +
             " or invalid indices.";
-          throw new RuntimeError(msg);
+          throw new InvalidFieldAccess(msg);
         } else {
           throw new RuntimeError(e.Message);
         }
@@ -158,7 +184,7 @@ namespace GNN.Scripting.Reflection {
             "'" + prop + "'" +
             " or invalid indices" +
             " or invalid value.";
-          throw new RuntimeError(msg);
+          throw new InvalidFieldAccess(msg);
         } else {
           throw new RuntimeError(e.Message);
         }
@@ -176,31 +202,64 @@ namespace GNN.Scripting.Reflection {
 #if _NET4
     public override bool TryInvokeMember(InvokeMemberBinder binder,
                                          object[] args, out object result) {
-      result = this.invoke(binder.Name, args);
-      return true;
+      try {
+        result = this.invoke(binder.Name, args);
+        return true;
+      } catch (ReflectionException) {
+        result = null;
+        return false;
+      } catch (Exception e) {
+        throw e;
+      }
     }
 
     public override bool TryGetMember(GetMemberBinder binder,
                                       out object result) {
-      result = this.getProp(binder.Name);
-      return true;
+      try {
+        result = this.getProp(binder.Name);
+        return true;
+      } catch (ReflectionException) {
+        result = null;
+        return false;
+      } catch (Exception e) {
+        throw e;
+      }
     }
 
     public override bool TrySetMember(SetMemberBinder binder, object val) {
-      this.setProp(binder.Name, val);
-      return true;
+      try {
+        this.setProp(binder.Name, val);
+        return true;
+      } catch (ReflectionException) {
+        return false;
+      } catch (Exception e) {
+        throw e;
+      }
     }
 
     public override bool TryGetIndex(GetIndexBinder binder, object[] index,
                                      out object result) {
-      result = this.getItem(index);
-      return true;
+      try {
+        result = this.getItem(index);
+        return true;
+      } catch (ReflectionException) {
+        result = null;
+        return false;
+      } catch (Exception e) {
+        throw e;
+      }
     }
 
     public override bool TrySetIndex(SetIndexBinder binder, object[] index,
                                      object val) {
-      this.setItem(index, val);
-      return true;
+      try {
+        this.setItem(index, val);
+        return true;
+      } catch (ReflectionException) {
+        return false;
+      } catch (Exception e) {
+        throw e;
+      }
     }
 #endif
 
