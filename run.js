@@ -24,7 +24,9 @@ WScript.Quit((function() {
     var OUTDIR = Path.join(TMPDIR, 'gnn.script.net');
     var MODDIR = 'lib';
     var MODULES = [
+        'GNN.Scripting.Util.js',
         'GNN.Scripting.Script.js',
+        'GNN.Scripting.Cache.js',
         'GNN.Scripting.Preprocessor.js',
         'GNN.Scripting.Compiler.js',
         'GNN.Scripting.Reflection.cs',

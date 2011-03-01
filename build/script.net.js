@@ -66,6 +66,8 @@ import GNN.Scripting.Reflection;
               'Generate optimized code.' ],
             [ '/optimize[+|-]',
               'Generate optimized code.' ],
+            [ '/cache[+|-]',
+              'Cache compiled assemblies (default).' ],
             []
         ]; options.pop();
         var max=0; var i;
