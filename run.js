@@ -2,16 +2,19 @@ WScript.Quit((function() {
     var CLI = /cscript.exe$/.test(WScript.FullName);
     var FSO = WScript.CreateObject('Scripting.FileSystemObject');
 
-    var Path = {
-        join: function() {
-            var path = arguments[0] || '';
-            for (var i=1; i < arguments.length; i++) {
-                path = FSO.BuildPath(path, arguments[i]);
-            }
-            return path;
-        },
-        parent: function(path) { return FSO.GetParentFolderName(path); }
-    };
+    var BINDIR = FSO.GetParentFolderName(WScript.ScriptFullName);
+    var LIBDIR = FSO.BuildPath(FSO.BuildPath(BINDIR, 'build'), 'lib');
+
+    // load bootstrap libraries
+    var e = new Enumerator(FSO.GetFolder(LIBDIR).Files);
+    for (; !e.atEnd(); e.moveNext()) {
+        var name = e.item().Name;
+        if (/.*\.js$/.test(name)) {
+            var ts = FSO.OpenTextFile(FSO.BuildPath(LIBDIR, name));
+            eval(ts.ReadAll());
+            ts.Close();
+        }
+    }
 
     var FOLDER_SPEC = {
         WIN: 0,
@@ -61,67 +64,6 @@ WScript.Quit((function() {
         '  OPTIONS  Options passed to the script runner.',
         '           Try "' + WScript.ScriptName + ' /help" for the detail.',
     ].join("\n")
-
-    var IO = {
-        print: function(msg) {
-            CLI ? WScript.StdOut.Write(msg) : WScript.Echo(msg);
-        },
-        puts: function(msg) {
-            CLI ? WScript.StdOut.WriteLine(msg) : WScript.Echo(msg);
-        },
-        err: function(msg) {
-            CLI ? WScript.StdErr.WriteLine(msg) : WScript.Echo(msg);
-        }
-    };
-
-    var Runner = (function(klass) {
-        klass.SW = {
-            HIDE:           0,
-            NORMAL:         1,
-            MINIMIZED:      2,
-            MAXIMIZED:      3,
-            NOACTIVATE:     4,
-            SHOW:           5,
-            MINIMIZE:       6,
-            MINNOACTIVE:    7,
-            NA:             8,
-            RESTORE:        9,
-            'DEFAULT':     10,
-            FORCEMINIMIZE: 11,
-            MAX:           11
-        };
-        return klass;
-    })(function() {
-        var self = { shell: WScript.CreateObject('WScript.Shell') };
-        self.run = function(cmd, show, wait) {
-            if (typeof wait == 'undefined') wait = true;
-            if (CLI) {
-                var exec = self.shell.exec(cmd);
-                if (wait) {
-                    while (exec.Status == 0) {
-                        if (!exec.StdOut.AtEndOfStream) {
-                            WScript.StdOut.Write(exec.StdOut.ReadAll());
-                        }
-                        if (!exec.StdErr.AtEndOfStream) {
-                            WScript.StdErr.Write(exec.StdErr.ReadAll());
-                        }
-                        WScript.Sleep(0);
-                    }
-                    return exec.ExitCode;
-                } else {
-                    return 0;
-                }
-            } else {
-                if (typeof show == 'undefined') show = 10;
-                return self.shell.run(cmd, show, wait);
-            }
-        };
-        self.script = function(cmd, show, wait) {
-            cmd = [ WScript.FullName, '/Nologo', cmd ].join(' ');
-            return self.run(cmd, show, wait);
-        };
-        return self;
-    });
 
     var build = function(module) {
         var runner = new Runner();
