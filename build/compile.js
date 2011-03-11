@@ -78,10 +78,10 @@ WScript.Quit((function() {
 
     // extend the environment
     var latest = '';
-    for (var i=0; i < versions.length; i++) {
-        latest = versions[i];
-        env.path.unshift(versions[i]);
-    }
+    versions.forEach(function(v) {
+        latest = v;
+        env.path.unshift(v);
+    });
 
     // references
     var refs =

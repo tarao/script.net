@@ -16,39 +16,18 @@ WScript.Quit((function() {
         }
     }
 
-    var FOLDER_SPEC = {
-        WIN: 0,
-        SYS: 1,
-        TMP: 2
-    };
-
-    var TMPDIR = FSO.GetSpecialFolder(FOLDER_SPEC.TMP).Path;
-    var SRCDIR = 'build';
-    var OUTDIR = Path.join(TMPDIR, 'gnn.script.net');
-    var MODDIR = 'lib';
-    var MODULES = [
-        'GNN.Scripting.Util.js',
-        'GNN.Scripting.Script.js',
-        'GNN.Scripting.Cache.js',
-        'GNN.Scripting.Preprocessor.js',
-        'GNN.Scripting.Compiler.js',
-        'GNN.Scripting.Reflection.cs',
-        'GNN.Scripting.Impl.js',
-        'GNN.Scripting.js'
-    ];
-    var BOOTSTRAP = 'compile.js';
-    var SOURCE = 'script.net.js';
-    var OUTPUT = CLI ? 'cscript.net.exe' : 'wscript.net.exe';
     var CWD = WScript.CreateObject('WScript.Shell').CurrentDirectory;
     var SHOW = (WScript.Arguments.Named.Item('show')||'DEFAULT').toUpperCase();
     var WAIT = WScript.Arguments.Named.Item('wait');
     var SCRIPT_ARGS = [];
+
     for (var i=0; i < WScript.Arguments.Length; i++) {
         var arg = WScript.Arguments(i);
         if (!new RegExp('^/(show|wait):').test(arg.toLowerCase())) {
             SCRIPT_ARGS.push('"'+arg+'"');
         }
     }
+
     var HELP = [
         [ 'Usage:', WScript.ScriptName,
           '[/wait:true|false]',
@@ -63,85 +42,35 @@ WScript.Quit((function() {
         '             MINIMIZE MINNOACTIVE NA RESTORE DEFAULT FORCEMINIMIZE',
         '  OPTIONS  Options passed to the script runner.',
         '           Try "' + WScript.ScriptName + ' /help" for the detail.',
-    ].join("\n")
-
-    var build = function(module) {
-        var runner = new Runner();
-        runner.shell.CurrentDirectory = Path.join(path, SRCDIR);
-
-        var cmd = [
-            BOOTSTRAP, '/nologo', '/debug-', '/dynamic+',
-            '/out:'+module.binary
-        ];
-        if (module.target) cmd.push('/target:'+module.target);
-        if (module.lang) {
-            cmd.push(/^js/.test(module.lang) ? '/fast+' : '/optimize+');
-            cmd.push('/lang:'+module.lang);
-        }
-        if ((module.reference||[]).length > 0) {
-            cmd.push('/reference:'+module.reference.join(';'));
-        }
-        cmd.push(module.source);
-
-        return runner.script(cmd.join(' '), Runner.SW.HIDE, true);
-    };
+    ].join("\n");
 
     if (SCRIPT_ARGS.length <= 0) {
         IO.puts(HELP);
         return 0;
     }
 
-    var path = Path.parent(WScript.ScriptFullName);
-    var outdir = OUTDIR;
-    if (!FSO.FolderExists(outdir)) FSO.CreateFolder(outdir);
+    var source = 'script.net.js';
+    var output = CLI ? 'cscript.net.exe' : 'wscript.net.exe';
 
     var main = {
-        source: Path.join(path, SRCDIR, SOURCE),
-        binary: Path.join(outdir, OUTPUT),
+        source: Path.join(SRCDIR, source),
+        binary: Path.join(TMPDIR, output),
         target: (CLI ? null : 'winexe'),
         reference: []
     };
-    var modules = [];
-    for (var i=0; i < MODULES.length; i++) {
-        var file = MODULES[i];
-        var option = [];
-        if (file instanceof Array) {
-            file = MODULES[i][0];
-            option = MODULES[i][1];
-        }
-        var out = [ FSO.GetBaseName(file), 'dll'].join('.');
-        out = Path.join(outdir, out);
-        var reference = main.reference.concat([]);
-        main.reference.push(out);
-        var lang = /\.js$/.test(file) ? 'jscript' : 'csharp';
-        modules.push({
-            source: Path.join(path, MODDIR, file),
-            binary: out,
-            reference: reference,
-            lang: lang,
-            target: 'library'
-        });
-    }
 
-    var files = modules.concat([main]);
-    for (var i=0; i < files.length; i++) {
-        var file = files[i];
-        file.exist = {
-            source: FSO.FileExists(file.source),
-            binary: FSO.FileExists(file.binary)
-        };
-        if (file.exist.source && file.exist.binary) {
-            var binary = FSO.GetFile(file.binary);
-            var source = FSO.GetFile(file.source);
-            if (binary.DateLastModified < source.DateLastModified) {
-                if (build(file) != 0) return 2;
+    try {
+        build({
+            compile: BOOTSTRAP,
+            main: main,
+            modules: MODULES,
+            dir: {
+                out: TMPDIR,
+                root: BINDIR
             }
-        } else if (!file.exist.binary) {
-            if (build(file) != 0) return 2;
-        } else if (!file.exist.source && !file.exist.binary) {
-            IO.err("Could not find '" + file.source + "'");
-            return 1;
-        }
+        });
+    } catch (e) {
+        return e;
     }
 
     var cmd = [ main.binary ]; var wait;
