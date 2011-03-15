@@ -17,11 +17,13 @@ WScript.Quit((function() {
         }
     }
 
+    var EXT = /\.(?:cs|js)$/;
+
     var TESTS = [];
     var e = new Enumerator(FSO.GetFolder(TESTDIR).Files);
     for (; !e.atEnd(); e.moveNext()) {
         var name = e.item().Name;
-        if (/.*\.cs$/.test(name)) TESTS.push(Path.join(TESTDIR, name));
+        if (EXT.test(name)) TESTS.push(Path.join(TESTDIR, name));
     }
 
     var refs = Tester.refs();
@@ -46,7 +48,7 @@ WScript.Quit((function() {
     }
 
     var tester = new Tester(TESTDIR);
-    tester.run(TESTS.map(function(t){ return t.replace(/\.cs$/, '.dll'); }));
+    tester.run(TESTS.map(function(t){ return t.replace(EXT, '.dll'); }));
 
     return 0;
 })());
