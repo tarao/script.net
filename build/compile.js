@@ -108,8 +108,8 @@ WScript.Quit((function() {
 
     // run the compiler
     var cmd = [ CMD ];
-    if (defs.length > 0) cmd.push('/define:'+defs.join(';'));
-    if (refs.length > 0) cmd.push('/r:'+refs.join(';'));
+    if (defs.length > 0) cmd.push('"/define:'+defs.join(';')+'"');
+    if (refs.length > 0) cmd.push('"/r:'+refs.join(';')+'"');
 
     for (var i=0; i < WScript.Arguments.Length; i++) {
         var arg = WScript.Arguments(i);

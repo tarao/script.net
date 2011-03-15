@@ -5,7 +5,7 @@ var build = (function() {
 
         var cmd = [
             cmd, '/nologo', '/debug-', '/dynamic+',
-            '/out:'+module.binary
+            '"/out:'+module.binary+'"'
         ];
         if (module.target) cmd.push('/target:'+module.target);
         if (module.lang) {
@@ -13,7 +13,7 @@ var build = (function() {
             cmd.push('/lang:'+module.lang);
         }
         if ((module.reference||[]).length > 0) {
-            cmd.push('/reference:'+module.reference.join(';'));
+            cmd.push('"/reference:'+module.reference.join(';')+'"');
         }
         cmd.push(module.source);
 
