@@ -41,6 +41,7 @@ var build = (function() {
         });
 
         mods.concat([main]).forEach(function(file) {
+            if (!file.source || !file.binary) return;
             file.exist = {
                 source: FSO.FileExists(file.source),
                 binary: FSO.FileExists(file.binary)
