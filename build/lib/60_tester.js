@@ -48,10 +48,8 @@ var Tester = (function(klass) {
 
     return {
         run: function(tests) {
-            tests.forEach(function(t) {
-                IO.puts(binary+' '+t);
-                runner.run(binary+' '+t);
-            });
+            tests = tests.map(function(t){return '"'+t+'"';}).join(' ');
+            runner.run(binary+' '+tests);
         }
     };
 });
