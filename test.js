@@ -48,6 +48,7 @@ WScript.Quit((function() {
     }
 
     var tester = new Tester(TESTDIR);
+    TESTS.forEach(function(t){ IO.puts(t); });
     tester.run(TESTS.map(function(t){ return t.replace(EXT, '.dll'); }));
 
     return 0;
