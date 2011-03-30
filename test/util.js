@@ -11,23 +11,25 @@ package GNN.Scripting.Test {
             var s4 = 'hogefoobartarap';
 
             Assert.IsNotEmpty(Util.hash(s1), 'hash() returns non-empty value');
-            Assert.True(Util.hash(s1) == Util.hash(s2),
-                        'hash() returns the same value for the same string');
-            Assert.True(Util.hash(s1) == Util.hash(s2),
-                        'hash() returns the same value for the same string');
-            Assert.False(Util.hash(s2) == Util.hash(s3),
-                         'hash() returns distinct values ' +
-                         'for distinct strings');
-            Assert.False(Util.hash(s3) == Util.hash(s4),
-                         'hash() returns distinct values ' +
-                         'for similar strings');
+            Assert.AreEqual(Util.hash(s1), Util.hash(s2),
+                            'hash() returns the same value for '+
+                            'the same string');
+            Assert.AreEqual(Util.hash(s1), Util.hash(s2),
+                            'hash() returns the same value for '+
+                            'the same string');
+            Assert.AreNotEqual(Util.hash(s2), Util.hash(s3),
+                               'hash() returns distinct values ' +
+                               'for distinct strings');
+            Assert.AreNotEqual(Util.hash(s3), Util.hash(s4),
+                               'hash() returns distinct values ' +
+                               'for similar strings');
         }
 
         Test function ArchTest() {
             Assert.IsNotEmpty(Util.arch(),
                               'arch() returns non-empty string');
-            Assert.True(/\d+/.test(Util.arch()),
-                        'arch() returns numeric text');
+            StringAssert.IsMatch('\\d+', Util.arch(),
+                                 'arch() returns numeric text');
         }
     }
 }
