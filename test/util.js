@@ -10,26 +10,23 @@ package GNN.Scripting.Test {
             var s3 = 'hogefoobartarao';
             var s4 = 'hogefoobartarap';
 
-            Assert.IsNotEmpty(Util.hash(s1), 'hash() returns non-empty value');
-            Assert.AreEqual(Util.hash(s1), Util.hash(s2),
-                            'hash() returns the same value for '+
-                            'the same string');
-            Assert.AreEqual(Util.hash(s1), Util.hash(s2),
-                            'hash() returns the same value for '+
-                            'the same string');
-            Assert.AreNotEqual(Util.hash(s2), Util.hash(s3),
-                               'hash() returns distinct values ' +
-                               'for distinct strings');
-            Assert.AreNotEqual(Util.hash(s3), Util.hash(s4),
-                               'hash() returns distinct values ' +
-                               'for similar strings');
+            Assert.That(Util.hash(s1), Is.Not.Empty,
+                        'hash() returns non-empty value');
+            Assert.That(Util.hash(s1), Is.EqualTo(Util.hash(s2)),
+                        'hash() returns the same value for the same string');
+            Assert.That(Util.hash(s1), Is.EqualTo(Util.hash(s2)),
+                        'hash() returns the same value for the same string');
+            Assert.That(Util.hash(s2), Is.Not.EqualTo(Util.hash(s3)),
+                        'hash() returns distinct values for distinct strings');
+            Assert.That(Util.hash(s3), Is.Not.EqualTo(Util.hash(s4)),
+                        'hash() returns distinct values for similar strings');
         }
 
         Test function ArchTest() {
-            Assert.IsNotEmpty(Util.arch(),
-                              'arch() returns non-empty string');
-            StringAssert.IsMatch('\\d+', Util.arch(),
-                                 'arch() returns numeric text');
+            Assert.That(Util.arch(), Is.Not.Empty,
+                        'arch() returns non-empty string');
+            Assert.That(Util.arch(), Is.StringMatching('\\d+'),
+                        'arch() returns numeric text');
         }
     }
 }
