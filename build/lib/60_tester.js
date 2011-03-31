@@ -1,5 +1,6 @@
 var Tester = (function(klass) {
     klass.binary = 'nunit-console.exe';
+    klass.gui = 'nunit.exe';
 
     klass.findDir = function() {
         var reg = new WinReg();
@@ -44,12 +45,17 @@ var Tester = (function(klass) {
 })(function(cwd) {
     var runner = new Runner();
     runner.shell.CurrentDirectory = cwd;
-    var binary = Path.join(Tester.findDir(), Tester.binary);
+    var dir = Tester.findDir();
+    var binary = Path.join(dir, Tester.binary);
+    var gui = Path.join(dir, Tester.gui);
 
     return {
         run: function(tests) {
             tests = tests.map(function(t){return '"'+t+'"';}).join(' ');
             runner.run(binary+' '+tests);
+        },
+        cleanup: function() {
+            runner.run(gui+' /cleanup');
         }
     };
 });
