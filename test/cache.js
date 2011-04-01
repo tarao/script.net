@@ -88,19 +88,19 @@ package GNN.Scripting.Test {
                         'Cache file name must have appropriate prefix');
         }
 
-        Test function SourceUpdateTest() {
-            var c1 : Cache = this.c[1];
+        Theory function SourceUpdateTest(i : int) {
+            var c1 : Cache = this.c[i];
             var fname = c1.file;
 
             Assert.False(File.Exists(c1.file),
                          'Ctor must not write cache file');
-            Assert.True(c1.update(this.o[1].input, {}),
+            Assert.True(c1.update(this.o[i].input, {}),
                         'The first update() always returns true');
             Assert.True(File.Exists(c1.file),
                         'Cache update must generate file');
 
-            var c2 : Cache = new Cache(this.o[1]);
-            Assert.False(c2.update(this.o[1].input, {}),
+            var c2 : Cache = new Cache(this.o[i]);
+            Assert.False(c2.update(this.o[i].input, {}),
                          'The first update() with the same source returns ' +
                          'false if cache file already exist');
             Assert.That(c1.file, Is.EqualTo(c2.file),
@@ -118,9 +118,9 @@ package GNN.Scripting.Test {
                         'modification');
         }
 
-        Test function OptionUpdateTest() {
+        Theory function OptionUpdateTest(i : int) {
             var s = 'hogehoge';
-            var o = this.o[1];
+            var o = this.o[i];
             var c1 : Cache = new Cache(o);
             var fname = c1.file;
 
@@ -136,7 +136,7 @@ package GNN.Scripting.Test {
                          'The first update() with the same source returns ' +
                          'false if cache file already exist');
 
-            o.file = 'foo';
+            o.file = this.o[i].file ? this.o[i].file+'a' : 'foo';
             Assert.True(c1.update(s, o),
                         'Option [file] affects cache modification');
             o.debug = true;
@@ -151,11 +151,6 @@ package GNN.Scripting.Test {
             Assert.That(c1.file, Is.EqualTo(fname),
                         'Cache file name does not change during ' +
                         'modification');
-
-            var c3 : Cache = new Cache(o);
-            Assert.That(c1.file, Is.Not.EqualTo(c3.file),
-                        'Changing [file] option generates different ' +
-                        'file for new cache object');
         }
     }
 }
