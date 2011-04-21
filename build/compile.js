@@ -85,8 +85,8 @@ WScript.Quit((function() {
 
     // references
     var refs =
-            WScript.Arguments.Named('reference') ||
-            WScript.Arguments.Named('r');
+            WScript.Arguments.Named.Item('reference') ||
+            WScript.Arguments.Named.Item('r');
     if (refs) refs = refs.split(';');
     refs = refs || [];
 
@@ -97,7 +97,7 @@ WScript.Quit((function() {
         var major = parseInt(m[1]);
         var minor = parseInt(m[2]);
         if (major >= 4) {
-            if (WScript.Arguments.Named('dynamic')) {
+            if (WScript.Arguments.Named.Item('dynamic')) {
                 refs.push('System.Dynamic.dll');
                 refs.push('System.Core.dll');
             }
