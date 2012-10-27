@@ -42,13 +42,15 @@ var build = (function() {
 
         mods.concat([main]).forEach(function(file) {
             if (!file.source || !file.binary) return;
+            var source = Path.join(args.dir.root, file.source);
+            var binary = file.binary;
             file.exist = {
-                source: FSO.FileExists(file.source),
-                binary: FSO.FileExists(file.binary)
+                source: FSO.FileExists(source),
+                binary: FSO.FileExists(binary)
             };
             if (file.exist.source && file.exist.binary) {
-                var binary = FSO.GetFile(file.binary);
-                var source = FSO.GetFile(file.source);
+                var binary = FSO.GetFile(binary);
+                var source = FSO.GetFile(source);
                 if (binary.DateLastModified < source.DateLastModified &&
                     build_(args.compile, args.dir.root, file) != 0) {
                     throw 2;
